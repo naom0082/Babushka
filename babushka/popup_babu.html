@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Babuska Bistro</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        .menu {
+            text-align: center;
+            margin-bottom: 3vw;
+
+        }
+
+        .liste {
+            border: 1px solid #cecece;
+            background-color: #ffb600;
+            padding: inherit;
+
+        }
+
+        h1 {
+            text-align: center;
+            font-family: monospace;
+            font-size: 4em;
+
+
+        }
+
+        h2 {
+            text-align: center;
+            font-family: monospace;
+
+
+        }
+
+        p {
+            text-align: center;
+            font-family: monospace;
+
+
+        }
+
+        .valgt {
+
+            background-color: rgba(0, 0, 0, 0.44);
+
+        }
+
+        #popup img {
+            width: 50%;
+
+
+        }
+
+        img {
+            width: 100%;
+
+
+        }
+
+        #liste {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+
+        }
+
+        #popup {
+
+            background-color: #ffffff;
+            display: none;
+            text-align: center;
+            position: fixed;
+            margin: auto;
+            padding: auto;
+
+        }
+
+        #indhold {
+
+            background-color: #ffffff;
+            margin: auto;
+            padding: 10vw;
+
+        }
+
+        #luk {
+            box-sizing: border-box;
+            text-align: right;
+            padding-right: 3em;
+
+        }
+
+        #luk button {
+            font-size: 1em;
+        }
+
+        button {
+
+            border: none;
+
+
+
+        }
+    </style>
+</head>
+
+
+<body>
+
+    <div id="popup">
+        <div id="luk"><button>X</button></div>
+        <div id="indhold"></div>
+
+    </div>
+    <header>
+        <h1>BISTRO BABUSHKA</h1>
+    </header>
+
+
+    <div class="menu">
+        <h2>Alle</h2>
+        <button class="filter" data-hold="alle">Alle</button>
+        <button class="filter" data-hold="forretter">Forretter</button>
+        <button class="filter" data-hold="hovedretter">Hovedretter</button>
+        <button class="filter" data-hold="desserter">Desserter</button>
+        <button class="filter" data-hold="drikkevarer">Drikkevarer</button>
+
+    </div>
+
+
+    <main>
+        <div id="liste"></div>
+
+    </main>
+
+    <script>
+        let retter = [];
+        let filter = "alle";
+
+        document.addEventListener("DOMContentLoaded", start);
+
+        function start() {
+            let dest = document.querySelector("#liste");
+            let temp = document.querySelector("template");
+
+            async function getJson() {
+                let jsonData = await fetch("https://mandalskeawebspace.dk/claude_php/clean_up_spreadsheet.php?id=1jxxxFoWBuMJ1qhQ9BQIAyKHmP38XtAF9_sQr0xo5JLo");
+                retter = await jsonData.json();
+                visRetter();
+            }
+
+            function visRetter() {
+                dest.innerHTML = "";
+                retter.forEach(eachRetter => {
+                    if (filter == "alle" || filter == eachRetter.kategori) {
+
+                        let template =
+                            `<article class "#liste">
+<div class="vis"><h2>${eachRetter.navn}</h2>
+<img src="imgs/large/${eachRetter.billede}.jpg" alt="${eachRetter.navn}">
+<p>${eachRetter.kort}</p>
+<p>Pris - ${eachRetter.pris}</p><br><br>
+
+    </article>`;
+                        dest.insertAdjacentHTML("beforeend", template);
+
+                        dest.lastElementChild.addEventListener("click", åbn);
+
+
+                        function åbn() {
+                            document.querySelector("#indhold").innerHTML =
+                                `<article class="retter">
+<img src="imgs/large/${eachRetter.billede}.jpg" alt="${eachRetter.navn}">
+
+<h3>${eachRetter.navn}</h3>
+<p>${eachRetter.lang} </p>
+<p>Pris - ${eachRetter.pris} </p>
+    </article>`;
+                            document.querySelector("#popup").style.display = "block";
+
+                        }
+                    }
+
+
+                })
+            }
+
+            document.querySelector("#luk button").addEventListener("click", () => {
+
+                document.querySelector("#popup").style.display = "none";
+
+            })
+
+            //function vispersoner slut
+            document.querySelectorAll(".filter").forEach(elm => {
+                elm.addEventListener("click", filtrering);
+            })
+
+            function filtrering() {
+                filter = this.getAttribute("data-hold");
+                document.querySelector("h2").textContent = this.textContent;
+                document.querySelectorAll(".filter").forEach(elm => {
+                    elm.classList.remove("valgt");
+                })
+                this.classList.add("valgt");
+
+                visRetter();
+
+            }
+
+            getJson()
+        }
+    </script>
+
+
+</body>
+
+</html>
